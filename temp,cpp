@@ -1,0 +1,460 @@
+#include <iostream>
+using namespace std;
+
+class Gadget
+{
+private:
+	int code;
+	char* name;
+	bool isActive;
+	static int count;
+
+public:
+	int length(const char* str)
+	{
+		int len = 0;
+		while (str[len] != '\0')
+		{
+			len++;
+		}
+		return len;
+	}
+
+	void copy(char* dest, const char* src)
+	{
+		int i = 0;
+		while (src[i] != '\0')
+		{
+			dest[i] = src[i];
+			i++;
+		}
+		dest[i] = '\0';
+	}
+
+	Gadget()
+	{
+		code = 0;
+		isActive = false;
+		name = new char[1];
+		name[0] = '\0';
+		count++;
+	}
+
+	Gadget(int c, const char* n, bool status)
+	{
+		code = c;
+		isActive = status;
+
+		int len = length(n);
+		name = new char[len + 1];
+		copy(name, n);
+
+		count++;
+	}
+
+	Gadget(const Gadget& other)
+	{
+		code = other.code;
+		isActive = other.isActive;
+
+		int len = length(other.name);
+		name = new char[len + 1];
+		copy(name, other.name);
+
+		count++;
+	}
+
+	Gadget(Gadget&& other)
+	{
+		code = other.code;
+		isActive = other.isActive;
+		name = other.name;
+
+		other.name = nullptr;
+
+		count++;
+	}
+
+	~Gadget()
+	{
+		delete[] name;
+	}
+
+	Gadget& setCode(int c)
+	{
+		code = c;
+		return *this;
+	}
+
+	Gadget& setName(const char* n)
+	{
+		delete[] name;
+
+		int len = length(n);
+		name = new char[len + 1];
+		copy(name, n);
+
+		return *this;
+	}
+
+	Gadget& setActive(bool status)
+	{
+		isActive = status;
+		return *this;
+	}
+
+	inline int getCode() const
+	{
+		return code;
+	}
+
+	inline const char* getName() const
+	{
+		return name;
+	}
+
+	inline bool getActive() const
+	{
+		return isActive;
+	}
+
+	void display() const
+	{
+		cout << "Gadget ID: " << code << endl;
+		cout << "Name: " << name << endl;
+		cout << "Active: ";
+		if (isActive == true)
+		{
+			cout << "Yes" << endl;
+		}
+		else
+		{
+			cout << "No" << endl;
+		}
+	}
+
+	static int getGadgetCount()
+	{
+		return count;
+	}
+};
+
+int Gadget::count = 0;
+
+
+class vipHuman
+{
+private:
+	char* name;
+	Gadget gadget;
+
+public:
+	vipHuman()
+	{
+		name = new char[1];
+		name[0] = '\0';
+	}
+
+	vipHuman(const char* n, int code, const char* gname, bool status)
+		: gadget(code, gname, status)
+	{
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+	}
+
+	~vipHuman()
+	{
+		delete[] name;
+	}
+
+	vipHuman& setName(const char* n)
+	{
+		delete[] name;
+
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+
+		return *this;
+	}
+
+	vipHuman& setGadget(int code, const char* gname, bool status)
+	{
+		gadget.setCode(code).setName(gname).setActive(status);
+		return *this;
+	}
+
+	const char* getName() const
+	{
+		return name;
+	}
+
+	Gadget* getGadget() const
+	{
+		return (Gadget*)&gadget;
+	}
+
+	void display() const
+	{
+		cout << "VIP Human: " << name << endl;
+		cout << "Owned Gadget:" << endl;
+		gadget.display();
+	}
+};
+
+
+class Human
+{
+private:
+	char* name;
+	Gadget* gadget;
+
+public:
+	Human()
+	{
+		name = new char[1];
+		name[0] = '\0';
+		gadget = nullptr;
+	}
+
+	Human(const char* n, const Gadget& g)
+	{
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+
+		gadget = (Gadget*)&g;
+	}
+
+	~Human()
+	{
+		delete[] name;
+	}
+
+	Human& setName(const char* n)
+	{
+		delete[] name;
+
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+
+		return *this;
+	}
+
+	Human& setGadget(const Gadget& g)
+	{
+		gadget = (Gadget*)&g;
+		return *this;
+	}
+
+	const char* getName() const
+	{
+		return name;
+	}
+
+	Gadget& getGadget()
+	{
+		return *gadget;
+	}
+
+	void display() const
+	{
+		cout << "Human: " << name << endl;
+
+		if (gadget != nullptr)
+		{
+			cout << "Borrowed Gadget:" << endl;
+			gadget->display();
+		}
+	}
+};
+
+
+class Robot
+{
+private:
+	char* name;
+
+	Gadget ownedGadgets[10];
+	int ownedCount;
+
+	Gadget* sharedGadgets[5];
+	int sharedCount;
+
+public:
+	Robot()
+	{
+		name = new char[1];
+		name[0] = '\0';
+
+		ownedCount = 0;
+		sharedCount = 0;
+	}
+
+	Robot(const char* n)
+	{
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+
+		ownedCount = 0;
+		sharedCount = 0;
+	}
+
+	~Robot()
+	{
+		delete[] name;
+	}
+
+	Robot& setName(const char* n)
+	{
+		delete[] name;
+
+		int len = 0;
+		while (n[len] != '\0') len++;
+
+		name = new char[len + 1];
+		for (int i = 0; i <= len; i++)
+		{
+			name[i] = n[i];
+		}
+
+		return *this;
+	}
+
+	Robot& addOwnedGadget(int code, const char* gname, bool status)
+	{
+		if (ownedCount < 10)
+		{
+			ownedGadgets[ownedCount].setCode(code).setName(gname).setActive(status);
+
+			ownedCount++;
+		}
+
+		return *this;
+	}
+
+	Robot& addSharedGadget(Gadget* g)
+	{
+		if (sharedCount < 5)
+		{
+			sharedGadgets[sharedCount] = g;
+			sharedCount++;
+		}
+
+		return *this;
+	}
+
+	const char* getName() const
+	{
+		return name;
+	}
+
+	void display() const
+	{
+		cout << "Robot Name: " << name << endl;
+
+		cout << "Owned Gadgets:" << endl;
+		for (int i = 0; i < ownedCount; i++)
+		{
+			ownedGadgets[i].display();
+		}
+
+		cout << "Shared Gadgets:" << endl;
+		for (int i = 0; i < sharedCount; i++)
+		{
+			sharedGadgets[i]->display();
+		}
+	}
+};
+
+
+
+int main()
+{
+	int n;
+
+	cout << "How many gadgets would you like to create? ";
+	cin >> n;
+	cin.ignore();
+
+	Gadget* gadgets = new Gadget[n];
+
+	for (int i = 0; i < n; i++)
+	{
+		int code;
+		char name[100];
+		bool status;
+
+		cout << "\nEnter Gadget " << i + 1 << " Code: ";
+		cin >> code;
+		cin.ignore();
+
+		cout << "Enter Gadget Name: ";
+		cin.getline(name, 100);
+
+		cout << "Is Active (1/0): ";
+		cin >> status;
+		cin.ignore();
+
+		gadgets[i].setCode(code).setName(name).setActive(status);
+	}
+
+	cout << "\n--- All Gadgets ---\n";
+	for (int i = 0; i < n; i++)
+		gadgets[i].display();
+
+
+	Human h1("Shizuka", gadgets[0]);
+	Human h2("Gian", gadgets[1]);
+
+
+	vipHuman vip("Nobita", 501, "Bamboo Copter", true);
+
+	Robot r1("Doraemon");
+
+	r1.addOwnedGadget(301, "Translator Tool", true).addOwnedGadget(302, "Time Freezer", false).addSharedGadget(&gadgets[0]);
+
+	cout << "\n--- Humans ---\n";
+	h1.display();
+	h2.display();
+
+	cout << "\n--- VIP Human ---\n";
+	vip.display();
+
+	cout << "\n--- Robots ---\n";
+	r1.display();
+
+	cout << "\nTotal Gadgets Created: " << Gadget::getGadgetCount() << endl;
+
+	delete[] gadgets;
+
+	return 0;
+}
